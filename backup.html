@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>Hello World!</title>
+    <link rel="stylesheet" href="assets/css/_bootstrap/bootstrap.css">
+    <script src="assets/js/jquery-3.3.1.min.js"></script>
+    <script src="assets/js/handlebars/handlebars-v4.7.6.js"></script>
+    <script src="assets/js/socket.io/socket.io.js"></script>
+  </head>
+<body>
+<style>
+  .btn_popContactus_open {display:none;}
+  .pop_contactus {display:none;}
+  div.img_button {display:inline-block; cursor:pointer}
+  div.img_button > img { width:20px;height:15px;position:relative; margin:0px 0px 0px 10px;}
+  
+  @media (min-width: 1200px) {
+    /* bootstrap reset */
+    .pop_contactus .custom-control {padding-left:24px; margin:0;}
+    .pop_contactus .custom-control-label::before {width:20px; height:20px; top:0; left:-25px}
+    .pop_contactus .custom-control-label::after {width:20px; height:20px; top:0; left:-25px}
+    .pop_contactus .custom-control-label {line-height:20px; font-size:12px;}
+    .bs-popover-top {top:-105px !important; left:-10px !important; font-size:12px; font-weight:bold;}
+
+    /* contents */
+    .btn_popContactus_open {display:inline-block; position:fixed; z-index:1; bottom:5.2rem; right:5.2rem; width:160px; height:60px;
+      padding-right:45px; font-size:16px; font-weight:800;
+      background:#fff url(/asset/images/bg_btn_chat.png) no-repeat right 20px center;
+      background-size: 36px 36px;
+      border-radius:15px;
+    }
+    .btn-light.btn_popContactus_open {
+      border-color: #999;
+    }
+    .btn-light.btn_popContactus_open:hover {
+      background-color:#e2e6ea
+    }
+    
+    .pop_contactus {position:fixed; z-index:1040; bottom:5rem; right:5rem; background:#fff; width:340px; height:674px; border-radius:15px;
+      box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 5PX 0px;
+    }
+    .pop_contactus.show {display:block;}
+    .pop_header {position:relative; background:#3abcd2; border-radius:15px 15px 0 0; padding:15px;}
+    .pop_header h1 {color:#fff; font-size:20px; font-weight:800; text-align:center;}
+    .pop_header .pop_contactus_close {position:absolute; top:15px; right:15px; background:#3abcd2; border-color:#3abcd2; font-size:15px;}
+    .pop_body {padding: 20px; border-radius:0 0 15px 15px;}
+    .pop_body.chat {overflow-y:auto; height:540px; border-bottom:1px solid #ededed; border-radius:0;}
+    .pop_body .lc_stats {padding-left:24px; background: url(/asset/images/view/ico_power_off.png) no-repeat 0 0;
+    background-size: auto 20px;}
+    .pop_body .lc_stats span {font-size:15px; font-weight:bold; letter-spacing:-0.5px;}
+    .pop_body .lc_stats.on {background-image:url(/asset/images/view/ico_power_on.png)}
+    .pop_body .lc_stats.on span {
+      background: -webkit-linear-gradient(#7b4397, #dc2430);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .pop_body .sub_title {margin:20px 0 5px; font-size:16px; font-weight:800;}
+    .pop_body .lc_agreeInfo { height:100px; overflow-y:auto; font-size:12px; border:1px solid #ededed; padding:8px;}
+    .pop_body .lc_chkBox {margin-top:10px;}
+    .pop_body .lc_centerList {height:320px; overflow-y:auto; font-size:12px; border:1px solid #ededed; padding:10px;}
+    .pop_body .lc_centerList li {font-size:15px; margin-bottom:5px;}
+    .pop_body .lc_centerList li .custom-control-input {font-size:15px;}
+    .pop_body .lc_btnBox {margin-top:20px; border-top: 1px solid #ededed; padding-top:20px; text-align:center;}
+    .pop_body .lc_btnBox .btn {font-size:16px; font-weight:bold; width:200px; height:40px;}
+
+  }
+</style>
+<div>
+<section class="pop_contactus" id="pop_contactus">
+  <div class="pop_header">
+    <h1>실시간 문의하기</h1>
+    <button type="button" id="pop_contactus_close" class="btn btn-info pop_contactus_close" style="right:40px;">━</button>
+    <button type="button" id="pop_contactus_exit" class="btn btn-info pop_contactus_close">X</button>
+  </div>
+
+  <!-- 채팅창 사용시 .pop_body 에 chat 클래스 추가 -->
+  <div id="chat_view" class="pop_body">
+    <!-- s : 문의하기  -->
+    <!-- <p class="lc_stats"><span>지금은 문의 가능시간이 아닙니다.</span></p> -->
+      <div id="chat_info">
+      <p class="lc_stats on"><span>센터 운영시간에 문의바랍니다.</span></p>
+      <!-- 
+
+      <h2 class="sub_title">STEP.1 동의하기</h2>
+      <div class="lc_agreeInfo">
+       페이지 이동 시 문의화면이 종료됩니다.
+      </div>
+
+      <div class="custom-control custom-checkbox lc_chkBox">
+        <input type="checkbox" class="custom-control-input" id="chk_agree">
+        <label class="custom-control-label" for="chk_agree">확인하였습니다.</label>
+      </div>
+      -->
+
+      <h2 class="sub_title" style="display:inline-block;">STEP.1 센터 선택</h2>
+      <ul id="lc_centerList" class="lc_centerList">
+        <!--
+        <li>
+          <div class="custom-control custom-radio">
+            <input type="radio" class="custom-control-input" id="center_1" name="rdo_center" value="agj">
+            <label class="custom-control-label" for="center_1">압구정 본원</label>
+
+          </div>
+        </li>
+        <li>
+          <div class="custom-control custom-radio">
+            <input type="radio" class="custom-control-input" id="center_2" name="rdo_center" value="md">
+            <label class="custom-control-label" for="center_2">목동 영재교육센터</label>
+          </div>
+        </li>
+        -->
+      </ul>
+
+      <h2 class="sub_title">STEP.2 이름 입력하기</h2>
+      <div class="form-group">
+        <input id="guest_name" type="text" class="form-control">
+      </div>
+
+      <div class="lc_btnBox">
+        <button id="btn_start_chat" type="button" class="btn btn-primary">문의하기</button>
+      </div>
+    </div>
+    <!-- e : 문의하기  -->
+
+    <!-- s : 채팅  -->
+    <style>
+    /* uikit reset */
+    .ui-w-40 { width: 40px !important; height: auto; }
+    /* spacing reset */
+    .p-4 {padding:0 !important}
+
+    /* contents */
+    .bg-lighter {background-color: rgba(24, 28, 33, 0.03) !important;}
+    .chat-wrapper {
+      position: relative;
+      display: flex;
+      flex: 1 1 100%;
+      min-height: calc(100vh - 290px);
+      width: 100%; }
+
+    .chat-search {
+      border-radius: 10rem; }
+
+    .chat-contacts .list-group-item {
+      z-index: auto !important;
+      display: flex;
+      align-items: center;
+      flex-grow: 0;
+      flex-shrink: 0;
+      padding: 0.625rem;
+      width: 100%;
+      border: 0;
+      border-radius: 0; }
+      .chat-contacts .list-group-item.active {
+        font-weight: bold; }
+      .chat-contacts .list-group-item:not(.active) {
+        opacity: 0.7; }
+        .chat-contacts .list-group-item:not(.active):active, .chat-contacts .list-group-item:not(.active):focus, .chat-contacts .list-group-item:not(.active):hover {
+          opacity: 1; }
+      .chat-contacts .list-group-item.online {
+        opacity: 1; }
+      .chat-contacts .list-group-item .chat-status {
+        font-weight: normal !important; }
+
+    .chat-messages {
+      display: flex;
+      flex-direction: column; }
+
+    .chat-message-left,
+    .chat-message-right { font-size:12px;
+      display: flex;
+      flex-shrink: 0; }
+
+    .chat-message-left {
+      margin-right: auto; }
+
+    .chat-message-right {
+      flex-direction: row-reverse;
+      margin-left: auto; }
+
+    .chat-scroll {
+      position: absolute !important;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%; }
+
+    .chat-contacts .list-group-item {
+      padding-right: 1.5rem;
+      padding-left: 1.5rem; }
+      .chat-contacts .list-group-item:not(.active) {
+        color: #212529; }
+      .chat-contacts .list-group-item .chat-status {
+        color: #FF4961; }
+      .chat-contacts .list-group-item .chat-status .badge {
+        background: #FF4961; }
+      .chat-contacts .list-group-item.online .chat-status {
+        color: #62d493; }
+      .chat-contacts .list-group-item.online .chat-status .badge {
+        background: #62d493; }
+      .chat-contacts .list-group-item.active .chat-status {
+        color: #fff; }
+      .chat-contacts .list-group-item.active .chat-status .badge {
+        background: #fff; 
+      }
+      .chat_writeBox {position: absolute; bottom: 10px; left: 15px; width: 310px; font-size:16px;}
+      .chat_writeBox .form-control {height:40px; border:0; border-bottom:1px solid #bababa;}
+      .chat_writeBox .btn {font-size:15px;}
+      .chat_writeBox .imageUploadBox {position: absolute; top:4px; right:63px; width:40px; text-indent:-9999px; z-index:5;}
+      /* s : reset */
+      .custom-file-input {z-index:-1;}
+      .input-group>.custom-file:not(:first-child) .custom-file-label {border:0; cursor:pointer;}
+      /* e : reset */
+      .chat_writeBox .imageUploadBox .custom-file-label::after {width:40px;
+        background: url(/asset/images/ico_picture.png) no-repeat center center;
+        background-size: 30px 30px;
+      }
+    </style>
+    <!--  chat_start  -->
+    <div id="chat_start" style="display: none;">
+      <div id="addMessage" class="chat-messages p-4">
+      </div>
+      <!--
+      <div class="input-group chat_writeBox">
+          <input id="inMessage" type="text" class="form-control" placeholder="대화 입력">
+          <div class="input-group-append">
+              <input type="file" id="chatfile" accept="image/*" style="display:none;" />
+              <button id="btnInMessage" type="button" class="btn btn-primary">보내기</button>
+              <button id="btnFile" type="button" class="btn btn-primary"><img scr="/asset/images/view/ico_save.png" /></button>
+          </div>
+      </div>
+      -->
+      <div id="chat_system_message" style="display:none;font-size: medium"></div>
+      <div class="input-group chat_writeBox">
+          <input id="inMessage" type="text" class="form-control" placeholder="대화 입력">
+          <div class="custom-file imageUploadBox">
+            <input type="file" class="custom-file-input" id="chatfile" accept="image/*" />
+            <label class="custom-file-label" for="chatfile"></label>
+          </div>
+          <div class="input-group-append">
+              <button id="btnInMessage" type="button" class="btn btn-primary">보내기</button>
+          </div>
+      </div>
+    </div>
+    <!-- e : 채팅  -->
+  </div>
+</section>
+
+<script id="chat-send-template" type="text/x-handlebars-template">
+  <div class="chat-message-right mb-4">
+      <div>
+          <img src="/assets/img/avatars/student.png" class="ui-w-40 rounded-circle" alt>
+          <div class="text-muted small text-nowrap mt-2">{{time}}</div>
+      </div>
+      <div class="flex-shrink-1 bg-lighter rounded py-2 px-3 mr-3">
+        {{msg}}
+      </div>
+  </div>
+</script>
+<script id="chat-rev-template" type="text/x-handlebars-template">
+  <div class="chat-message-left mb-4">
+      <div>
+          <img src="/assets/img/avatars/teacher.png" class="ui-w-40 rounded-circle" alt>
+          <div class="text-muted small text-nowrap mt-2">{{time}}</div>
+      </div>
+      <div class="flex-shrink-1 bg-lighter rounded py-2 px-3 ml-3">
+        {{msg}}
+      </div>
+  </div>
+</script>
+<script id="chat-rev-img-template" type="text/x-handlebars-template">
+  <div class="chat-message-left mb-4">
+      <div>
+          <img src="/assets/img/avatars/teacher.png" class="ui-w-40 rounded-circle" alt>
+          <div class="text-muted small text-nowrap mt-2">{{time}}</div>
+      </div>
+      <div class="flex-shrink-1 bg-lighter rounded py-2 px-3 ml-3">
+        <img src="{{msg}}" onclick="imgPopupView(this)" style="cursor:pointer;"/>
+      </div>
+  </div>
+</script>
+<script id="chat-send-img-template" type="text/x-handlebars-template">
+  <div class="chat-message-right mb-4">
+      <div>
+          <img src="/assets/img/avatars/student.png" class="ui-w-40 rounded-circle" alt>
+          <div class="text-muted small text-nowrap mt-2">{{time}}</div>
+      </div>
+      <div class="flex-shrink-1 bg-lighter rounded py-2 px-3 mr-3">
+        <img src="{{msg}}" onclick="imgPopupView(this)" style="cursor:pointer;"/>
+      </div>
+  </div>
+</script>
+<script id="chat-system-template" type="text/x-handlebars-template">
+  <div class="mb-4">
+    <div class="flex-shrink-1 rounded py-2 px-3 mr-3">
+    <font color="gray" size="2">{{msg}}</font>
+    </div>
+  </div>
+</script>
+<script id="chat-center-list-template" type="text/x-handlebars-template">
+  {{#each centerList}}
+  <li>
+    <div class="custom-control custom-radio">
+      <input type="radio" class="custom-control-input" id="center_{{@index}}" name="rdo_center" value="{{cmsId}}" 
+      {{#ifCond useYn 'N'}}
+      disabled="disabled"
+      {{/ifCond}}
+      />
+      <label class="custom-control-label" for="center_{{@index}}">{{cmsName}}
+      {{#ifCond useYn 'N'}}
+      (선택불가)
+      {{/ifCond}}
+      </label>
+    </div>
+  </li>
+  {{/each}}
+</script>
+
+<script type="text/javascript">
+  var socket = null;
+  var nickname = null;
+  var socketServer = 'https://test-mchat.cmsedu.co.kr';
+  var currRoomAdmin = null;
+  Handlebars.registerHelper('ifCond', function(v1, v2, options) {
+    if(v1 == v2) {
+      return options.fn(this);
+    }
+    return options.inverse(this);
+  });
+  $(function(){
+    //$(document).on('click','#btn_popContactus_open',function(){
+      $('#pop_contactus').addClass('show');
+      if (!socket){
+        startInfoView();
+      }
+    //});
+
+    $(document).on('click','#pop_contactus_close',function(){
+      $('#pop_contactus').removeClass('show');
+    });
+    $(document).on('click','#pop_contactus_exit',function(){
+      var res = leaveRoom();
+      if (res) $('#pop_contactus').removeClass('show');
+    });
+
+    $('#btn_start_chat').on('click',function(){
+      var isCheck = checkInput();
+      if (!isCheck){
+        return;
+      }
+      namespace = $('input:radio[name="rdo_center"]:checked').val();
+      nickname = $.trim($('#guest_name').val());
+      startSocketListener();
+    });
+    $('#guest_name').on('keyup', function(key){
+      if (key.keyCode == 13) {
+        var isCheck = checkInput();
+        if (!isCheck){
+          return;
+        }
+        namespace = $('input:radio[name="rdo_center"]:checked').val();
+        nickname = $.trim($('#guest_name').val());
+        startSocketListener();
+      }
+    });
+
+    $('#btnInMessage').on('click', function(){
+      var msg = $('#inMessage').val();
+      sendMessage(msg);
+    });
+    $('#inMessage').on('keyup', function(key){
+      if (key.keyCode == 13) {
+          var msg = $(this).val();
+          sendMessage(msg);
+      }
+    });
+    function startSocketListener(){
+      $('#addMessage').empty();
+      currRoomAdmin = null;
+      disabledToggle(true,false);
+      socket = io(socketServer+'/'+namespace);
+      socket.on('connect', function(){
+        console.log('namespace : ' + namespace);
+        console.log('nickname : ' + nickname);
+        socket.emit('roomcreate', {nickname:nickname});
+        startChatView();
+      });
+      socket.on('roomchatAdmin', function(data){
+        var inhtml = $('#chat-rev-template').html();
+        var template = Handlebars.compile(inhtml);
+        var innerHtml = template({msg:data.msg, time:data.time});
+        $('#addMessage').append(innerHtml);
+        $('#chat_view').animate({scrollTop: $("#chat_view")[0].scrollHeight}, 100);
+        console.log('roomchatAdmin : '+data);
+      });
+      socket.on('roomchat', function(data){
+        var inhtml = $('#chat-send-template').html();
+        var template = Handlebars.compile(inhtml);
+        var innerHtml = template({msg:data.msg, time:data.time});
+        $('#addMessage').append(innerHtml);
+        $('#chat_view').animate({scrollTop: $("#chat_view")[0].scrollHeight}, 100);
+        console.log('roomchat : '+data);
+      });
+      socket.on('disconnect', function(){
+          console.log('disconnect');
+      });
+      socket.on('targetRoomInfo', function(data){
+        var isDasable = (data && data.isAdminOnline) ? false : true;
+        var isAdminEnd = data.isAdminEnd;
+        disabledToggle(isDasable,isAdminEnd);
+      });
+
+      socket.on("imageUser", function (data) {
+        console.log("imageUser");
+        var inhtml = $('#chat-send-img-template').html();
+        var template = Handlebars.compile(inhtml);
+        var innerHtml = template({msg:data.msg, time:data.time});
+        $('#addMessage').append(innerHtml);
+        $('#chat_view').animate({scrollTop: $("#chat_view")[0].scrollHeight}, 100);
+      });
+      socket.on("imageAdmin", function (data) {
+        console.log("imageAdmin");
+        var inhtml = $('#chat-rev-img-template').html();
+        var template = Handlebars.compile(inhtml);
+        var innerHtml = template({msg:data.msg, time:data.time});
+        $('#addMessage').append(innerHtml);
+        $('#chat_view').animate({scrollTop: $("#chat_view")[0].scrollHeight}, 100);
+      });
+
+      // Listen to file input events
+      $('#chatfile').on('change', function(event){
+      //document.getElementById("chatfile").addEventListener("change", function (event) {
+        //var output = document.getElementById("output");
+        // Prepeare file reader
+        var file = event.target.files[0];
+        //var imgFile = $('#chatfile').val();
+        var imgFile = $(this).val();
+        var fileForm = /(.*?)\.(jpg|jpeg|png|gif|bmp|pdf)$/;
+        var fileReader = new FileReader();
+        if (file == null) {
+          return;
+        }
+        if (!(imgFile.toLowerCase()).match(fileForm)){
+          alert("이미지 파일만 전송이 가능합니다.");
+          var agent = navigator.userAgent.toLowerCase();
+          if ( (navigator.appName == 'Netscape' && navigator.userAgent.search('Trident') != -1) || (agent.indexOf("msie") != -1) ){
+            $("#chatfile").replaceWith( $("#chatfile").clone(true) ); 
+          } else { 
+              // other browser 일때 input[type=file] init. 
+              $("#chatfile").val(""); 
+          }
+          return;
+        }
+        fileReader.onloadend = function (event) {
+          // // Send an image event to the socket
+          // var image = event.target.result;
+          // //output.src = image;
+          // console.log('socket.emit("image", image);');
+          // socket.emit("image", image);
+          sendImage(event);
+        };
+
+        // Read file
+        fileReader.readAsDataURL(file);
+      });
+
+    }
+    function closeSocketLister(){
+      if(socket) socket.off();
+      try {
+        $('#chatfile').off();
+      } catch (error) {
+      }
+      socket = null;
+    }
+
+    function startChatView(){
+      $('#chat_view').addClass('chat');
+      $('#chat_info').hide();
+      $('#chat_start').show();
+    }
+    function startInfoView(){
+      $('#chat_view').removeClass('chat');
+      $('#chat_start').hide();
+      $('#chat_info').show();
+    }
+    function checkInput(){
+      if (!$('input:radio[name="rdo_center"]:checked').val()){
+        alert('문의하실 센터를 선택하세요.');
+        return false;
+      }
+      var guestName = $.trim($('#guest_name').val());
+      if (!guestName){
+        alert('이름을 입력하세요.');
+        return false;
+      }
+      return true;
+    }
+    function sendMessage(msg){
+      if (!msg) return;
+      if (!currRoomAdmin){
+        systemShowMessage();
+        $('#inMessage').val('');
+      } else {
+        socket.emit('roomchat', {msg:msg});
+        $('#inMessage').val('');
+      }
+    }
+    function sendImage(event){
+      if (!currRoomAdmin){
+        systemShowMessage();
+      } else {
+        var image = event.target.result;
+        socket.emit("image", image);
+      }
+    }
+
+    function systemShowMessage(msg){
+      // if(!msg) msg = '죄송합니다. 현재 상담 대기 인원이 많아 상담 대기가 길어지고 있습니다. 잠시만 기다려주세요 ...';
+      if(!msg) msg = '상담을 대기중입니다. 잠시만 기다려주세요 ...';
+      var inhtml = $('#chat-system-template').html();
+      var template = Handlebars.compile(inhtml);
+      var innerHtml = template({msg:msg});
+      $('#addMessage').append(innerHtml);
+      $('#chat_view').animate({scrollTop: $("#chat_view")[0].scrollHeight}, 100);
+    }
+    function leaveRoom(){
+      var result = confirm("채팅방에 나가시겠습니까?\n채팅을 나갈 경우 저장된 내용이 삭제됩니다.");
+      if(!result) return;
+      try {
+        socket.emit('leaveroom');
+        socket.disconnect();
+        socket.close();
+      } catch (error) {
+      }
+      closeSocketLister();
+      $('#addMessage').empty();
+      return true;
+    }
+    function disabledToggle(isDisabled, isAdminEnd){
+      if(isDisabled){
+          //$('#inMessage').attr('disabled', 'disabled');
+          //$('#btnInMessage').attr('disabled', 'disabled');
+          $('#chatfile').attr('disabled', 'disabled');
+          var msg = '';
+          if(isAdminEnd) {
+            msg = '상담이 종료되었습니다.';
+          } else {
+            msg = '상담을 요청중입니다.';
+          }
+          $('#chat_system_message').html(msg);
+          $('#chat_system_message').show();
+          if (currRoomAdmin == true) {
+            systemShowMessage('관리자가 퇴장하였습니다.');
+            currRoomAdmin = false;
+          }
+      } else {
+          $('#inMessage').removeAttr('disabled');
+          $('#btnInMessage').removeAttr('disabled');
+          $('#chatfile').removeAttr('disabled');
+          $('#chat_system_message').hide();
+          $('#chat_system_message').empty();
+          if (currRoomAdmin !== true) {
+            systemShowMessage('관리자가 입장하였습니다.');
+            currRoomAdmin = true;
+          }
+      }
+    }
+  });
+
+  function imgPopupView(_this){
+    var soruce = $(_this).attr('src');
+    var wnd = window.open("", "new window", "width=600,height=600");  
+    wnd.document.write('<img src="'+soruce+'" />');  
+  }
+
+</script>
+</body>
+</html>

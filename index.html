@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+    </title>
+    <link rel="stylesheet" href="public/css/style.css" />
+    <script src="public/js/jquery.min.js"></script>
+    <script src="public/js/socket.io.js"></script>
+    <script src="public/js/handlebars-v4.7.6.js"></script>
+    <script src="public/js/view/sockm.js"></script>
+    <script src="public/js/view/index.js"></script>
+</head>
+<body>
+    
+<!--It's just a concept, a chat UI design for direct messaging!
+Enjoy! :) Don't forget to click the heart if you like it! -->
+
+<div class="container">
+    <div class="chatbox">
+      <div class="top-bar">
+        <div class="avatar"><p>V</p></div>
+        <div id="targetNamespace" class="name"></div>
+        <div class="icons">
+          <i class="fas fa-phone"></i>
+          <i class="fas fa-video"></i>
+        </div>
+        <div class="menu">
+          <div class="dots"></div>
+        </div>
+      </div>
+      <div id="chat_view" class="middle">
+        <div id="addMessage" class="voldemort">
+          <!--
+            <div class="incoming">
+              <div class="bubble">Hey, Father's Day is coming up..</div>
+              <div class="bubble">What are you getting.. Oh, oops sorry dude.</div>
+            </div>
+            <div class="outgoing">
+              <div class="bubble lower">Nah, it's cool.</div>
+              <div class="bubble">Well you should get your Dad a cologne. Here smell it. Oh wait! ...</div>
+            </div>
+          -->
+          <!--
+            <div class="typing">
+              <div class="bubble">
+                <div class="ellipsis one"></div>
+                <div class="ellipsis two"></div>
+                <div class="ellipsis three"></div>
+              </div>
+            </div>
+          -->
+        </div>
+      </div>
+      <div class="bottom-bar">
+        <div class="chat">
+          <input id="inMessage" type="text" placeholder="Type a message..." />
+          <button id="btnInMessage" type="submit"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="messages"></div>
+    <div class="profile">
+      <div class="avatar"><p>C</p></div>
+      <div class="name2">CMSEDU<p class="email"></p></div>
+    </div>
+    <ul class="people">
+      <li class="person" data-namespace="sccube">
+        <span class="title">씨큐브코딩 서초코어센터</span>
+        <!--
+          <span class="time">2:50pm</span><br>
+          <span class="preview">What are you getting... Oh, oops...</span>
+        -->
+      </li>
+       <li class="person" data-namespace="dccube">
+        <span class="title">씨큐브코딩 대치센터</span>
+        <!--
+        <span class="time">2:25pm</span><br>
+        <span class="preview">Meet me at Hogsmeade and bring...</span>
+        -->
+      </li>
+      <li class="person" data-namespace="mdcube">
+        <span class="title">씨큐브코딩 목동센터</span>
+        <!--
+        <span class="time">2:12pm</span><br>
+        <span class="preview">Have you and Ron done your hom...</span>
+        -->
+      </li>
+    </ul>
+  </div>
+
+
+  <script id="chat-rev-template" type="text/x-handlebars-template">
+    <div class="incoming">
+      <div class="bubble">{{msg}} {{time}}</div>
+    </div>
+  </script>
+  <script id="chat-send-template" type="text/x-handlebars-template">
+    <div class="outgoing">
+      <div class="bubble">{{msg}} {{time}}</div>
+    </div>
+  </script>
+  <script id="chat-rev-img-template" type="text/x-handlebars-template">
+    <div class="incoming">
+      <div class="bubble"><img src="{{msg}}" onclick="imgPopupView(this)" style="cursor:pointer;"/> {{time}}</div>
+    </div>
+  </script>
+  <script id="chat-send-img-template" type="text/x-handlebars-template">
+    <div class="outgoing">
+      <div class="bubble"><img src="{{msg}}" onclick="imgPopupView(this)" style="cursor:pointer;"/> {{time}}</div>
+    </div>
+  </script>
+  
+</body>
