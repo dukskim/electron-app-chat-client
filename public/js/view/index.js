@@ -11,6 +11,7 @@ Handlebars.registerHelper('ifCond', function(v1, v2, options){
 $(()=>{
   sockm.init({
     fnConnect: () => {
+      createRoom()
       console.log('connect!!')
     },
     fnRoomchatAdmin: (data) => {
@@ -55,11 +56,11 @@ $(()=>{
     },
     socketServer: socketServer
   })
-  const startSocket = (namespace, nickname) => {
+  const startSocket = (namespace) => {
     $('#addMessage').empty()
     sockm.leaveRoom()
     sockm.closeSocket()
-    sockm.startSocket(namespace, nickname)
+    sockm.startSocket(namespace)
   }
   const sendUserMessage = (msg) => {
     if (!msg) return
@@ -79,13 +80,16 @@ $(()=>{
       sockm.sendUserImage(image)
     }
   }
+  const createRoom = () => {
+    sockm.createRoom(nickname)
+  }
 
   // 소켓시작버튼
   $(".person").on('click', function(){
     $(this).toggleClass('focus').siblings().removeClass('focus')
     const namespace = $(this).attr('data-namespace')
     currNamesapce = namespace
-    startSocket(namespace, nickname)
+    startSocket(namespace)
   })
 
   $('#btnInMessage').on('click', () => {

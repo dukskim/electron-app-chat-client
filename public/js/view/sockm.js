@@ -12,6 +12,7 @@ var sockm = {
   fnImageAdmin: null,
   fnRoomInfo: null,
   fnRoomcreate: null,
+  fnRoomjoin: null,
   init: function(option){
     this.fnConnect = option.fnConnect;
     this.fnRoomchatAdmin = option.fnRoomchatAdmin;
@@ -22,15 +23,14 @@ var sockm = {
     this.fnImageAdmin = option.fnImageAdmin;
     this.fnRoomInfo = option.fnRoomInfo;
     this.fnRoomcreate = option.fnRoomcreate;
+    this.fnRoomjoin = option.fnRoomjoin;
     this.socketServer = option.socketServer;
   },
-  startSocket: function(namespace, nickname){
+  startSocket: function(namespace){
     var _this = this;
     _this.namespace = namespace;
-    _this.nickname = nickname;
     _this.socket = io(_this.socketServer+'/'+_this.namespace);
     _this.socket.on('connect', function(){
-      _this.socket.emit('roomcreate', {nickname:nickname});
       if(typeof _this.fnConnect == 'function') _this.fnConnect();
     });
     _this.socket.on('roomchatAdmin', function(data){
@@ -57,6 +57,9 @@ var sockm = {
     _this.socket.on("roomcreate", function (data) {
       if(typeof _this.fnRoomcreate == 'function') _this.fnRoomcreate(data);
     });
+    _this.socket.on("roomjoin", function (data) {
+      if(typeof _this.fnRoomjoin == 'function') _this.fnRoomjoin(data);
+    });
 
   },
   sendUserMessage: function(msg){
@@ -71,6 +74,15 @@ var sockm = {
   },
   leaveRoom: function(){
     if(this.socket) this.socket.emit('leaveroom');
+  },
+  createRoom: function(nickname){
+    if(this.socket) {
+      this.nickname = nickname;
+      this.socket.emit('roomcreate', {nickname:nickname});
+    }
+  },
+  joinRoom: function(roomid,nickname){
+    if (this.socket) this.socket.emit('roomjoin', {room:roomid, nickname:nickname});
   },
   closeSocket: function(){
     try {
