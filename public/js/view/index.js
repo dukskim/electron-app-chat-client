@@ -58,6 +58,7 @@ $(()=>{
   const startSocket = (namespace, nickname) => {
     $('#addMessage').empty()
     sockm.leaveRoom()
+    sockm.closeSocket()
     sockm.startSocket(namespace, nickname)
   }
   const sendUserMessage = (msg) => {

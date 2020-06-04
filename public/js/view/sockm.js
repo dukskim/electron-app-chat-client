@@ -57,6 +57,7 @@ var sockm = {
     _this.socket.on("roomcreate", function (data) {
       if(typeof _this.fnRoomcreate == 'function') _this.fnRoomcreate(data);
     });
+
   },
   sendUserMessage: function(msg){
     if(this.socket) this.socket.emit("roomchat", {msg:msg});
@@ -66,13 +67,17 @@ var sockm = {
   },
   closeSocketLister: function(){
     if(this.socket) this.socket.off();
-    socket = null;
+    this.socket = null;
   },
   leaveRoom: function(){
+    if(this.socket) this.socket.emit('leaveroom');
+  },
+  closeSocket: function(){
     try {
-      this.socket.emit('leaveroom');
-      this.socket.disconnect();
-      this.socket.close();
+      if(this.socket){
+        this.socket.disconnect();
+        this.socket.close();
+      }
     } catch (error) {
     }
     this.closeSocketLister();
