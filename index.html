@@ -4,11 +4,17 @@
     <title>
     </title>
     <link rel="stylesheet" href="public/css/style.css" />
+
+    <!-- Insert this line above script imports  -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <!-- normal script imports etc  -->
     <script src="public/js/jquery.min.js"></script>
     <script src="public/js/socket.io.js"></script>
     <script src="public/js/handlebars-v4.7.6.js"></script>
     <script src="public/js/view/sockm.js"></script>
+    <!-- Insert this line after script imports -->
     <script src="public/js/view/index.js"></script>
+    <script>if (window.module) module = window.module;</script>
 </head>
 <body>
     
