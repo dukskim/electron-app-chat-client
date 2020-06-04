@@ -10,6 +10,8 @@ var sockm = {
   fnTargetRoomInfo: null,
   fnImageUser: null,
   fnImageAdmin: null,
+  fnRoomInfo: null,
+  fnRoomcreate: null,
   init: function(option){
     this.fnConnect = option.fnConnect;
     this.fnRoomchatAdmin = option.fnRoomchatAdmin;
@@ -18,6 +20,8 @@ var sockm = {
     this.fnTargetRoomInfo = option.fnTargetRoomInfo;
     this.fnImageUser = option.fnImageUser;
     this.fnImageAdmin = option.fnImageAdmin;
+    this.fnRoomInfo = option.fnRoomInfo;
+    this.fnRoomcreate = option.fnRoomcreate;
     this.socketServer = option.socketServer;
   },
   startSocket: function(namespace, nickname){
@@ -46,6 +50,12 @@ var sockm = {
     });
     _this.socket.on("imageAdmin", function (data) {
       if(typeof _this.fnImageAdmin == 'function') _this.fnImageAdmin(data);
+    });
+    _this.socket.on("roomInfo", function (data) {
+      if(typeof _this.fnRoomInfo == 'function') _this.fnRoomInfo(data);
+    });
+    _this.socket.on("roomcreate", function (data) {
+      if(typeof _this.fnRoomcreate == 'function') _this.fnRoomcreate(data);
     });
   },
   sendUserMessage: function(msg){
