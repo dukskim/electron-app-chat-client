@@ -65,8 +65,11 @@ var sockm = {
   sendUserMessage: function(msg){
     if(this.socket) this.socket.emit("roomchat", {msg:msg});
   },
-  sendUserImage: function(image){
+  sendImage: function(image){
     if(this.socket) this.socket.emit("image", image);
+  },
+  sendAdminMessage: function(msg){
+    if(this.socket) this.socket.emit("roomchatAdmin", {msg:msg});
   },
   closeSocketLister: function(){
     if(this.socket) this.socket.off();
@@ -83,6 +86,8 @@ var sockm = {
   },
   joinRoom: function(roomid,nickname){
     if (this.socket) this.socket.emit('roomjoin', {room:roomid, nickname:nickname});
+    this.socket.room = roomid
+    this.socket.nickname = nickname
   },
   closeSocket: function(){
     try {

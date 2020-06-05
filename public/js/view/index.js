@@ -72,12 +72,12 @@ $(()=>{
       $('#inMessage').val('')
     }
   }
-  const sendUserImage = (event) => {
+  const sendImage = (event) => {
     if (!currRoomAdmin){
       systemShowMessage()
     } else {
       const image = event.target.result
-      sockm.sendUserImage(image)
+      sockm.sendImage(image)
     }
   }
   const createRoom = () => {
@@ -134,7 +134,7 @@ $(()=>{
       // //output.src = image;
       // console.log('socket.emit.emit("image", image);');
       // socket.emit("image", image);
-      sendUserImage(event)
+      sendImage(event)
     }
 
     // Read file
